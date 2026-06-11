@@ -1,0 +1,45 @@
+# ============================================
+# SECURITY - NEVER COMMIT THESE!
+# ============================================
+.env                          # API keys - CRITICAL!
+*.env
+*.key
+*.pem
+
+# ============================================
+# Python cache & virtual env
+# ============================================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+
+# ============================================
+# Local data files (user-specific)
+# ============================================
+quota_tracker.json
+research_*.json
+*.log
+
+# ============================================
+# IDE files (your preferences, not needed)
+# ============================================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ============================================
+# OS garbage files
+# ============================================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ============================================
+# Streamlit local secrets (configure in cloud)
+# ============================================
+.streamlit/secrets.toml
