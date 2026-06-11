@@ -1,6 +1,7 @@
 from langchain.agents import create_agent
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
+import streamlit as st  
 from langchain_core.output_parsers import StrOutputParser
 from tools import web_search, scrape_url
 import os
@@ -41,22 +42,29 @@ critic_parser = PydanticOutputParser(pydantic_object=CriticFeedback)
 def get_llm_with_retry():
     """Initialize Gemini with retry logic and error handling"""
     api_key = os.getenv("GOOGLE_API_KEY")
+    
+    # For Streamlit Cloud deployment - TRY SECRETS IF ENV VAR NOT FOUND
     if not api_key:
-        raise ValueError("GOOGLE_API_KEY not found in environment variables")
+        try:
+            api_key = st.secrets.get("GOOGLE_API_KEY")
+            print("Using API key from Streamlit secrets")
+        except:
+            pass
+    
+    if not api_key:
+        raise ValueError("GOOGLE_API_KEY not found in environment variables or Streamlit secrets")
     
     print("KEY FOUND:", bool(api_key))
-    print("KEY PREFIX:", api_key[:15])
+    if api_key:
+        print("KEY PREFIX:", api_key[:15])
     
-    # Model from environment variable (configurable)
-    model_name = os.getenv("MODEL_NAME", "gemini-2.5-flash")
-    temperature = float(os.getenv("TEMPERATURE", "0"))
-    
+    # Simple retry without backoff
     max_retries = 3
     for attempt in range(max_retries):
         try:
             llm = ChatGoogleGenerativeAI(
-                model=model_name,
-                temperature=temperature,
+                model="gemini-2.5-flash",
+                temperature=0,
                 google_api_key=api_key,
                 request_timeout=30,
                 max_retries=2
@@ -66,10 +74,9 @@ def get_llm_with_retry():
             if attempt == max_retries - 1:
                 raise e
             print(f"Retry {attempt + 1}/{max_retries} after error: {e}")
-            time.sleep(2 ** attempt)  # Exponential backoff: 1s, 2s, 4s
+            time.sleep(2)
     
     return None
-
 llm = get_llm_with_retry()
 print("Gemini Connected!")
 
